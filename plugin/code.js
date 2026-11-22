@@ -4,7 +4,7 @@
 // figconn plugin — executes commands from the figconn MCP server.
 // Written in plain ES2017 (no optional chaining / object spread) for the Figma sandbox.
 
-figma.showUI(__html__, { width: 260, height: 110, themeColors: true });
+figma.showUI(__html__, { width: 300, height: 180, themeColors: true });
 
 var SESSION_ID = Math.random().toString(36).slice(2, 10);
 
@@ -2330,6 +2330,10 @@ H.create_table = async function (p) {
 // ---------------------------------------------------------------------------
 
 figma.ui.onmessage = async function (msg) {
+  if (msg && msg.type === 'resize') {
+    figma.ui.resize(Math.max(240, Math.min(480, msg.width || 300)), Math.max(90, Math.min(640, Math.ceil(msg.height))));
+    return;
+  }
   if (!msg || msg.type !== 'request') return;
   var res = { type: 'response', id: msg.id, cmd: msg.cmd, port: msg.port };
   try {

@@ -4,6 +4,10 @@
 // ---------------------------------------------------------------------------
 
 figma.ui.onmessage = async function (msg) {
+  if (msg && msg.type === 'resize') {
+    figma.ui.resize(Math.max(240, Math.min(480, msg.width || 300)), Math.max(90, Math.min(640, Math.ceil(msg.height))));
+    return;
+  }
   if (!msg || msg.type !== 'request') return;
   var res = { type: 'response', id: msg.id, cmd: msg.cmd, port: msg.port };
   try {

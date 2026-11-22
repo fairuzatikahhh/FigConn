@@ -1,7 +1,7 @@
 // figconn plugin — executes commands from the figconn MCP server.
 // Written in plain ES2017 (no optional chaining / object spread) for the Figma sandbox.
 
-figma.showUI(__html__, { width: 260, height: 110, themeColors: true });
+figma.showUI(__html__, { width: 300, height: 180, themeColors: true });
 
 var SESSION_ID = Math.random().toString(36).slice(2, 10);
 

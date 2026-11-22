@@ -27,6 +27,26 @@ const clients = new Map();
 const pending = new Map(); // requestId -> {resolve, reject, timer}
 let boundPort = null;
 
+const sockets = new Set(); // every open plugin socket, hello'd or not
+const startedAt = Date.now();
+const SERVER_VERSION = "0.1.0";
+
+/** Who this server is, shown in the plugin window so users can tell connections apart. */
+function serverInfo() {
+  const client = mcp.server.getClientVersion();
+  return {
+    version: SERVER_VERSION,
+    port: boundPort,
+    pid: process.pid,
+    cwd: process.cwd(),
+    startedAt,
+    client: client ? { name: client.name, version: client.version } : null,
+  };
+}
+function sendServerInfo(ws) {
+  if (ws.readyState === 1) ws.send(JSON.stringify({ type: "server-info", info: serverInfo() }));
+}
+
 function onConnection(ws, req) {
   // Browsers send an Origin header; the plugin iframe's origin is "null".
   // Reject any real web page that tries to connect to this port.
@@ -37,6 +57,8 @@ function onConnection(ws, req) {
     return;
   }
   const connId = randomUUID();
+  sockets.add(ws);
+  sendServerInfo(ws);
   ws.on("message", (raw) => {
     let msg;
     try { msg = JSON.parse(raw.toString()); } catch { return; }
@@ -59,6 +81,7 @@ function onConnection(ws, req) {
     }
   });
   ws.on("close", () => {
+    sockets.delete(ws);
     clients.delete(connId);
   });
 }
@@ -140,7 +163,7 @@ function call(cmd, params = {}, { file, timeout = DEFAULT_TIMEOUT } = {}) {
 // ---------------------------------------------------------------------------
 
 const mcp = new McpServer(
-  { name: "FigConn", version: "0.1.0" },
+  { name: "FigConn", version: SERVER_VERSION },
   {
     instructions:
       "FigConn controls Figma Desktop through a local plugin (no REST API, no quota). Start with `status` to see connected files " +
@@ -398,5 +421,6 @@ for (const f of readdirSync(toolsDir).filter((f) => f.endsWith(".js")).sort()) {
 // ---------------------------------------------------------------------------
 
 await startWs();
+mcp.server.oninitialized = () => { for (const ws of sockets) sendServerInfo(ws); };
 await mcp.connect(new StdioServerTransport());
 log("MCP ready");
