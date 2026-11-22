@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="400" viewBox="0 0 1280 400" role="img" aria-label="FigConn — let Claude Code drive Figma Desktop">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1B1530"/>
+      <stop offset="1" stop-color="#0B0B12"/>
+    </linearGradient>
+    <linearGradient id="warm" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FF7A59"/>
+      <stop offset="1" stop-color="#F24E9E"/>
+    </linearGradient>
+    <linearGradient id="cool" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8B5CF6"/>
+      <stop offset="1" stop-color="#22D3EE"/>
+    </linearGradient>
+    <linearGradient id="wire" gradientUnits="userSpaceOnUse" x1="116" y1="0" x2="150" y2="0">
+      <stop offset="0" stop-color="#F24E9E"/>
+      <stop offset="1" stop-color="#8B5CF6"/>
+    </linearGradient>
+  
+    <linearGradient id="page" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#14101F"/>
+      <stop offset="1" stop-color="#07070C"/>
+    </linearGradient>
+    <radialGradient id="glowA" cx="0.18" cy="0.2" r="0.5">
+      <stop offset="0" stop-color="#F24E9E" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#F24E9E" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowB" cx="0.9" cy="0.95" r="0.55">
+      <stop offset="0" stop-color="#22D3EE" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#22D3EE" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="word" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FF7A59"/>
+      <stop offset="0.45" stop-color="#F24E9E"/>
+      <stop offset="1" stop-color="#8B5CF6"/>
+    </linearGradient>
+    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.4" fill="#FFFFFF" fill-opacity="0.06"/>
+    </pattern>
+  </defs>
+  <rect width="1280" height="400" rx="28" fill="url(#page)"/>
+  <rect width="1280" height="400" rx="28" fill="url(#dots)"/>
+  <rect width="1280" height="400" rx="28" fill="url(#glowA)"/>
+  <rect width="1280" height="400" rx="28" fill="url(#glowB)"/>
+  <g transform="translate(104 88) scale(0.875)">
+
+  <!-- tile -->
+  <rect width="256" height="256" rx="56" fill="url(#bg)"/>
+  <rect x="1.5" y="1.5" width="253" height="253" rx="54.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.08" stroke-width="3"/>
+
+  <!-- left: a design frame (corner brackets around a canvas) -->
+  <g fill="none" stroke="url(#warm)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M40 92 V74 H58"/>
+    <path d="M98 74 H116 V92"/>
+    <path d="M116 162 V180 H98"/>
+    <path d="M58 180 H40 V162"/>
+  </g>
+  <rect x="58" y="96" width="40" height="62" rx="10" fill="url(#warm)"/>
+
+  <!-- wire with packets -->
+  <path d="M116 127 H150" stroke="url(#wire)" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="126" cy="127" r="3" fill="#FFFFFF" fill-opacity="0.9"/>
+  <circle cx="139" cy="127" r="3" fill="#FFFFFF" fill-opacity="0.9"/>
+
+  <!-- right: the agent node -->
+  <circle cx="182" cy="127" r="38" fill="url(#cool)"/>
+  <path d="M168 113 L182 127 L168 141" fill="none" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M186 143 H200" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round"/>
+</g>
+  <g font-family="'Inter','SF Pro Display','Segoe UI',system-ui,-apple-system,sans-serif">
+    <text x="400" y="188" font-size="104" font-weight="800" letter-spacing="-3" fill="#FFFFFF">Fig<tspan fill="url(#word)">Conn</tspan></text>
+    <text x="404" y="246" font-size="30" font-weight="500" fill="#C9C6D6">Let Claude Code drive Figma Desktop.</text>
+    <text x="404" y="290" font-size="22" font-weight="500" fill="#8E8AA3">Local MCP bridge · no REST API · no tokens · no quota</text>
+  </g>
+</svg>
