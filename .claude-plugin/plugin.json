@@ -1,0 +1,28 @@
+{
+  "name": "figconn",
+  "version": "0.1.0",
+  "description": "Let Claude Code drive Figma Desktop through a local plugin: no REST API, no tokens, no quota. 62 tools for frames, variables, styles, components, prototypes and FigJam.",
+  "author": {
+    "name": "fairuzatikahhh",
+    "url": "https://github.com/fairuzatikahhh"
+  },
+  "homepage": "https://github.com/fairuzatikahhh/FigConn",
+  "repository": "https://github.com/fairuzatikahhh/FigConn",
+  "keywords": [
+    "figma",
+    "figjam",
+    "mcp",
+    "design-systems",
+    "design-tokens",
+    "variables",
+    "components"
+  ],
+  "mcpServers": {
+    "figconn": {
+      "command": "node",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/scripts/launch.js"
+      ]
+    }
+  }
+}

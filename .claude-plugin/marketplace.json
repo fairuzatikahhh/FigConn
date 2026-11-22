@@ -1,0 +1,20 @@
+{
+  "name": "figconn",
+  "owner": {
+    "name": "fairuzatikahhh",
+    "url": "https://github.com/fairuzatikahhh"
+  },
+  "metadata": {
+    "description": "FigConn: a local MCP bridge between Claude Code and Figma Desktop."
+  },
+  "plugins": [
+    {
+      "name": "figconn",
+      "source": "./",
+      "description": "Let Claude Code drive Figma Desktop through a local plugin: no REST API, no tokens, no quota.",
+      "version": "0.1.0",
+      "category": "design",
+      "homepage": "https://github.com/fairuzatikahhh/FigConn"
+    }
+  ]
+}

@@ -40,21 +40,37 @@ The MCP server opens a WebSocket on the first free port between 3911 and 3920. T
 
 ## Quick start
 
-**1. Install**
+### Option A: Claude Code plugin (recommended)
+
+Inside Claude Code:
+
+```
+/plugin marketplace add fairuzatikahhh/FigConn
+/plugin install figconn@figconn
+```
+
+Or in one step on recent Claude Code versions:
+
+```
+/plugin install figconn --marketplace fairuzatikahhh/FigConn
+```
+
+The MCP server is registered for you and installs its own dependencies on first start (Node 18+ and npm required). Restart Claude Code, then ask Claude to *"check FigConn status"*: when no Figma file is connected yet, the reply includes the exact path of `plugin/manifest.json` to import in step 3 below.
+
+### Option B: clone manually
 
 ```bash
 git clone https://github.com/fairuzatikahhh/FigConn.git
 cd FigConn
 npm install
-```
-
-**2. Register the MCP server** (see [other clients](#register-in-other-mcp-clients) below)
-
-```bash
 claude mcp add figconn -s user -- node "$(pwd)/server/index.js"
 ```
 
-**3. Import the plugin into Figma Desktop**
+For other MCP clients, see [Register in other MCP clients](#register-in-other-mcp-clients).
+
+### Then, in Figma
+
+**3. Import the plugin into Figma Desktop** (once)
 
 Figma Desktop → **Plugins → Development → Import plugin from manifest…** → pick `plugin/manifest.json`.
 
@@ -268,6 +284,8 @@ claude mcp add figconn -s user -- npx -y github:fairuzatikahhh/FigConn
 
 ```
 server/index.js          MCP server + WebSocket bridge + core tools
+scripts/launch.js        plugin entry point: installs deps on first run, then starts the server
+.claude-plugin/          Claude Code plugin + marketplace manifests (plugin.json registers the MCP server)
 server/tools/*.js        extra tool modules, auto-loaded (export register(ctx))
 plugin/src/00-core.js    plugin helpers + core handlers
 plugin/src/NN-*.js       handler modules (H.tool_name = async fn)

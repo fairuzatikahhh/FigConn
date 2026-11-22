@@ -186,7 +186,10 @@ mcp.registerTool(
     ok({
       port: boundPort,
       files: [...clients.values()].map((c) => ({ ...c.info, lastActive: new Date(c.lastActive).toISOString() })),
-      hint: clients.size ? undefined : "Open Figma Desktop → Plugins → Development → FigConn",
+      hint: clients.size
+        ? undefined
+        : "Open a file in Figma Desktop → Plugins → Development → FigConn. First time? Import the plugin via " +
+          "Plugins → Development → Import plugin from manifest… and pick " + join(dirname(fileURLToPath(import.meta.url)), "..", "plugin", "manifest.json"),
     })
 );
 
