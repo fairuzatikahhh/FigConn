@@ -2,6 +2,7 @@
   "name": "figconn",
   "version": "0.1.0",
   "description": "Local MCP bridge between Claude Code and Figma Desktop with no REST API and no rate limits. Read, build and edit designs, variables, styles and components through a dev plugin over localhost WebSocket.",
+  "license": "MIT",
   "type": "module",
   "bin": { "figconn": "server/index.js" },
   "scripts": {

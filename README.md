@@ -7,6 +7,7 @@
   <img alt="Figma plugin" src="https://img.shields.io/badge/Figma-dev%20plugin-F24E9E?style=flat-square">
   <img alt="Node 18+" src="https://img.shields.io/badge/node-%E2%89%A518-22D3EE?style=flat-square">
   <img alt="62 tools" src="https://img.shields.io/badge/tools-62-FF7A59?style=flat-square">
+  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-3DDC97?style=flat-square"></a>
 </p>
 
 <p align="center">
@@ -311,6 +312,10 @@ npm run check   # build + syntax check everything
 | `Timed out waiting for Figma` | The plugin window was closed, or the operation is large. Re-open it, or pass a bigger `timeoutMs` to `execute` |
 | New tools don't show up | Restart the MCP client; re-run the plugin after `npm run build` |
 | Only 1 mode per collection | That's a Figma plan limit (Starter), not FigConn |
+
+## License
+
+[MIT](LICENSE) © 2026 fairuz atikah
 
 ---
 
