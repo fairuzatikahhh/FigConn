@@ -203,9 +203,16 @@ function findMode(col, name) {
   return m || null;
 }
 
-async function toVarValue(type, v) {
+async function toVarValue(type, v, homeCollection) {
   if (v && typeof v === 'object' && v.alias) {
-    return figma.variables.createVariableAlias(await findVariable(v.alias, v.collection));
+    var target;
+    if (v.collection) target = await findVariable(v.alias, v.collection);
+    else {
+      // Prefer the variable's own collection, so same-named variables elsewhere aren't picked by accident.
+      try { target = homeCollection ? await findVariable(v.alias, homeCollection) : null; } catch (e) { target = null; }
+      if (!target) target = await findVariable(v.alias);
+    }
+    return figma.variables.createVariableAlias(target);
   }
   if (type === 'COLOR') return rgb(v);
   if (type === 'FLOAT') return Number(v);
@@ -445,10 +452,10 @@ H.create_variables = async function (p) {
         for (var k = 0; k < modeNames.length; k++) {
           var mode = findMode(col, modeNames[k]);
           if (!mode) { col.addMode(modeNames[k]); mode = findMode(col, modeNames[k]); }
-          vv.setValueForMode(mode.modeId, await toVarValue(sp.type, sp.values[modeNames[k]]));
+          vv.setValueForMode(mode.modeId, await toVarValue(sp.type, sp.values[modeNames[k]], col.id));
         }
       } else if (sp.value !== undefined) {
-        for (var m = 0; m < col.modes.length; m++) vv.setValueForMode(col.modes[m].modeId, await toVarValue(sp.type, sp.value));
+        for (var m = 0; m < col.modes.length; m++) vv.setValueForMode(col.modes[m].modeId, await toVarValue(sp.type, sp.value, col.id));
       }
       out.push({ id: vv.id, name: vv.name });
     } catch (e) {
@@ -530,7 +537,7 @@ H.create_paint_style = async function (p) {
   var s = await findStyle(p.name, 'PAINT');
   if (!s) { s = figma.createPaintStyle(); s.name = p.name; }
   var paint = hexPaint(p.hex || '#000000');
-  if (p.variable) paint = figma.variables.setBoundVariableForPaint(paint, 'color', await findVariable(p.variable));
+  if (p.variable) paint = figma.variables.setBoundVariableForPaint(paint, 'color', await findVariable(p.variable, p.collection));
   s.paints = [paint];
   if (p.description !== undefined) s.description = p.description;
   return { id: s.id, name: s.name, key: s.key };

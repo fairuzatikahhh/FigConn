@@ -97,6 +97,10 @@ console.error("guard ok: file is empty (" + guard.data.pages + " page)");
 // =============================================================================
 const R = {};
 let r;
+// Variables and styles outlive deleted layers, so give everything from this run a unique name.
+const RUN = new Date().toISOString().slice(5, 16).replace(/[-:T]/g, "");
+const COL = "FC Tokens " + RUN;
+const STY = "FC " + RUN + "/";
 
 // --- read / basics
 await step("status lists editorType", "status", {}, { file: false, check: (d) => d.files.every((f) => "editorType" in f) || "editorType missing" });
@@ -157,15 +161,15 @@ r = await step("create_section around screens", "create_section", { name: "Flow"
 await step("fit_section padding 60", "fit_section", { nodeId: R.sec, padding: 60 });
 
 // --- variables
-r = await step("create_variable_collection Light/Dark", "create_variable_collection", { name: "FC Tokens", modes: ["Light", "Dark"] });
+r = await step("create_variable_collection Light/Dark", "create_variable_collection", { name: COL, modes: ["Light", "Dark"] });
 R.twoModes = r.ok;
 if (!r.ok && /fewer modes|limited to/i.test(results[results.length - 1].note || "")) {
   results[results.length - 1].status = "WARN";
   results[results.length - 1].note = "Figma plan allows 1 mode per collection; continuing with 1 mode";
 }
-if (!r.ok) { r = await step("create_variable_collection (1 mode fallback)", "create_variable_collection", { name: "FC Tokens", modes: ["Light"] }); }
+if (!r.ok) { r = await step("create_variable_collection (1 mode fallback)", "create_variable_collection", { name: COL, modes: ["Light"] }); }
 const vals = (light, dark) => (R.twoModes ? { Light: light, Dark: dark } : { Light: light });
-await step("create_variables (incl. alias)", "create_variables", { collection: "FC Tokens", variables: [
+await step("create_variables (incl. alias)", "create_variables", { collection: COL, variables: [
   { name: "color/bg", type: "COLOR", values: vals("#FFFFFF", "#15131F") },
   { name: "color/surface", type: "COLOR", values: vals("#F4F4F8", "#221F31") },
   { name: "color/primary", type: "COLOR", value: "#8B5CF6" },
@@ -173,22 +177,22 @@ await step("create_variables (incl. alias)", "create_variables", { collection: "
   { name: "space/16", type: "FLOAT", value: 16, scopes: ["GAP", "WIDTH_HEIGHT"] },
   { name: "radius/md", type: "FLOAT", value: 12, scopes: ["CORNER_RADIUS"] },
 ] });
-await step("get_variables", "get_variables", { collection: "FC Tokens" }, { check: (d) => d[0].variables.length === 6 || "count " + d[0].variables.length });
-await step("bind_variable fill", "bind_variable", { nodeIds: [R.A], field: "fill", variable: "color/bg" });
-await step("bind_variable fill (card)", "bind_variable", { nodeIds: [R.card], field: "fill", variable: "color/surface" });
-await step("bind_variable padding", "bind_variable", { nodeIds: [R.card], field: "padding", variable: "space/16" });
-await step("bind_variable cornerRadius", "bind_variable", { nodeIds: [R.card], field: "cornerRadius", variable: "radius/md" });
-if (R.twoModes) await step("set_variable_mode Dark", "set_variable_mode", { nodeIds: [R.B], collection: "FC Tokens", mode: "Dark" });
+await step("get_variables", "get_variables", { collection: COL }, { check: (d) => d[0].variables.length === 6 || "count " + d[0].variables.length });
+await step("bind_variable fill", "bind_variable", { nodeIds: [R.A], field: "fill", variable: "color/bg", collection: COL });
+await step("bind_variable fill (card)", "bind_variable", { nodeIds: [R.card], field: "fill", variable: "color/surface", collection: COL });
+await step("bind_variable padding", "bind_variable", { nodeIds: [R.card], field: "padding", variable: "space/16", collection: COL });
+await step("bind_variable cornerRadius", "bind_variable", { nodeIds: [R.card], field: "cornerRadius", variable: "radius/md", collection: COL });
+if (R.twoModes) await step("set_variable_mode Dark", "set_variable_mode", { nodeIds: [R.B], collection: COL, mode: "Dark" });
 await step("list_library_variables", "list_library_variables", {});
 
 // --- styles
-await step("create_paint_style (bound)", "create_paint_style", { name: "FC/Primary", variable: "color/primary" });
-await step("create_text_style", "create_text_style", { name: "FC/Title", fontFamily: "Inter", fontStyle: "Bold", fontSize: 22, lineHeight: "130%", letterSpacing: "-1%" });
-await step("create_effect_style", "create_effect_style", { name: "FC/Shadow", shadows: [{ color: "#1B153029", x: 0, y: 8, blur: 24, spread: -4 }] });
+await step("create_paint_style (bound)", "create_paint_style", { name: STY + "Primary", variable: "color/primary", collection: COL });
+await step("create_text_style", "create_text_style", { name: STY + "Title", fontFamily: "Inter", fontStyle: "Bold", fontSize: 22, lineHeight: "130%", letterSpacing: "-1%" });
+await step("create_effect_style", "create_effect_style", { name: STY + "Shadow", shadows: [{ color: "#1B153029", x: 0, y: 8, blur: 24, spread: -4 }] });
 await step("get_styles", "get_styles", {}, { check: (d) => d.length >= 3 || "count " + d.length });
-await step("apply_style text", "apply_style", { nodeIds: [R.t1], style: "FC/Title" });
-await step("apply_style fill", "apply_style", { nodeIds: [R.clones[0] || R.rect], style: "FC/Primary" });
-await step("apply_style effect", "apply_style", { nodeIds: [R.card], style: "FC/Shadow" });
+await step("apply_style text", "apply_style", { nodeIds: [R.t1], style: STY + "Title" });
+await step("apply_style fill", "apply_style", { nodeIds: [R.clones[0] || R.rect], style: STY + "Primary" });
+await step("apply_style effect", "apply_style", { nodeIds: [R.card], style: STY + "Shadow" });
 
 // --- components
 r = await step("create_frame Button", "create_frame", { name: "Button", parentId: R.page, x: 0, y: 1000, fill: "#8B5CF6", cornerRadius: 8, autoLayout: { mode: "HORIZONTAL", padding: [10, 16, 10, 16], sizing: "HUG" } }); R.btn = idOf(r.data);

@@ -307,7 +307,7 @@ relay("create_variable_collection", "Create a variable collection with the given
 relay(
   "create_variables",
   "Create or update variables in a collection. values map mode name -> value: COLOR '#hex', FLOAT number, STRING string, BOOLEAN bool, " +
-    "or {\"alias\":\"other/variable name\"}. A single value (not a map) applies to all modes. Existing variables with the same name are updated.",
+    "or {\"alias\":\"other/variable name\"} (looked up in the same collection first; add \"collection\" to point elsewhere). A single value (not a map) applies to all modes. Existing variables with the same name are updated.",
   {
     collection: z.string().describe("Collection name or id"),
     variables: z
@@ -352,6 +352,7 @@ relay("create_paint_style", "Create (or update by name) a paint style from a hex
   name: z.string(),
   hex: z.string().optional(),
   variable: z.string().optional().describe("Color variable name/id to bind"),
+  collection: z.string().optional().describe("Disambiguate `variable` by collection name or id"),
   description: z.string().optional(),
 });
 relay("create_text_style", "Create (or update by name) a text style.", {
