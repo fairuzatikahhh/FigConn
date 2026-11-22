@@ -8,6 +8,7 @@
   "scripts": {
     "start": "node server/index.js",
     "build": "node scripts/build-plugin.js",
+    "test:e2e": "node tests/e2e.mjs",
     "check": "node scripts/build-plugin.js && node --check server/index.js && for f in server/tools/*.js; do node --check $f || exit 1; done && node --check plugin/code.js"
   },
   "dependencies": {

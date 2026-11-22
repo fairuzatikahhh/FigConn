@@ -404,8 +404,18 @@ H.get_variables = async function (p) {
 H.create_variable_collection = async function (p) {
   var col = figma.variables.createVariableCollection(p.name);
   var modes = p.modes || [];
-  if (modes.length) col.renameMode(col.modes[0].modeId, modes[0]);
-  for (var i = 1; i < modes.length; i++) col.addMode(modes[i]);
+  try {
+    if (modes.length) col.renameMode(col.modes[0].modeId, modes[0]);
+    for (var i = 1; i < modes.length; i++) col.addMode(modes[i]);
+  } catch (e) {
+    col.remove(); // all-or-nothing: don't leave a half-made collection behind
+    var msg = e && e.message ? e.message : String(e);
+    if (/limited to \d+ modes?/i.test(msg)) {
+      throw new Error('This file\'s Figma plan allows fewer modes than requested (' + msg.replace(/^in addMode: /, '') +
+        '). Nothing was created. Retry with fewer modes, e.g. modes: ["' + modes[0] + '"].');
+    }
+    throw e;
+  }
   return { id: col.id, name: col.name, modes: col.modes };
 };
 

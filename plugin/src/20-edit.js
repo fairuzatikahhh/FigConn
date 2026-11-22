@@ -303,13 +303,15 @@ H.duplicate_nodes = async function (p) {
     var clones = [];
     var last = n;
     for (var k = 1; k <= count; k++) {
-      var c = n.clone(); // placed in the same parent as the original
+      // clone() puts the copy on figma.currentPage, not in the original's parent,
+      // so always place it explicitly.
+      var c = n.clone();
       if (target) {
         target.appendChild(c);
-      } else if (c.parent && 'insertChild' in c.parent) {
-        // keep the clone directly above the previous copy in z-order
-        var idx = c.parent.children.indexOf(last);
-        if (idx >= 0 && c.parent.children.indexOf(c) !== idx + 1) c.parent.insertChild(idx + 1, c);
+      } else if (n.parent && 'insertChild' in n.parent) {
+        // same parent as the original, directly above the previous copy in z-order
+        var idx = n.parent.children.indexOf(last);
+        n.parent.insertChild(idx >= 0 ? idx + 1 : n.parent.children.length, c);
       }
       if (!edLaidOut(c)) {
         c.x = n.x + dx * k;

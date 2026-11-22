@@ -407,8 +407,18 @@ H.get_variables = async function (p) {
 H.create_variable_collection = async function (p) {
   var col = figma.variables.createVariableCollection(p.name);
   var modes = p.modes || [];
-  if (modes.length) col.renameMode(col.modes[0].modeId, modes[0]);
-  for (var i = 1; i < modes.length; i++) col.addMode(modes[i]);
+  try {
+    if (modes.length) col.renameMode(col.modes[0].modeId, modes[0]);
+    for (var i = 1; i < modes.length; i++) col.addMode(modes[i]);
+  } catch (e) {
+    col.remove(); // all-or-nothing: don't leave a half-made collection behind
+    var msg = e && e.message ? e.message : String(e);
+    if (/limited to \d+ modes?/i.test(msg)) {
+      throw new Error('This file\'s Figma plan allows fewer modes than requested (' + msg.replace(/^in addMode: /, '') +
+        '). Nothing was created. Retry with fewer modes, e.g. modes: ["' + modes[0] + '"].');
+    }
+    throw e;
+  }
   return { id: col.id, name: col.name, modes: col.modes };
 };
 
@@ -1186,13 +1196,15 @@ H.duplicate_nodes = async function (p) {
     var clones = [];
     var last = n;
     for (var k = 1; k <= count; k++) {
-      var c = n.clone(); // placed in the same parent as the original
+      // clone() puts the copy on figma.currentPage, not in the original's parent,
+      // so always place it explicitly.
+      var c = n.clone();
       if (target) {
         target.appendChild(c);
-      } else if (c.parent && 'insertChild' in c.parent) {
-        // keep the clone directly above the previous copy in z-order
-        var idx = c.parent.children.indexOf(last);
-        if (idx >= 0 && c.parent.children.indexOf(c) !== idx + 1) c.parent.insertChild(idx + 1, c);
+      } else if (n.parent && 'insertChild' in n.parent) {
+        // same parent as the original, directly above the previous copy in z-order
+        var idx = n.parent.children.indexOf(last);
+        n.parent.insertChild(idx >= 0 ? idx + 1 : n.parent.children.length, c);
       }
       if (!edLaidOut(c)) {
         c.x = n.x + dx * k;

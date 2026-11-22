@@ -317,7 +317,10 @@ plugin/code.js           GENERATED: npm run build
 ```bash
 npm run build   # concatenate plugin/src → plugin/code.js
 npm run check   # build + syntax check everything
+npm run test:e2e -- "FigConn Test"   # end-to-end test against an EMPTY Figma file
 ```
+
+The end-to-end test starts its own server, runs ~90 steps across 60 tools (frames, shapes, images, auto layout, variables, styles, components, prototyping, exports) in a new page, and writes `e2e-output/report.json` plus screenshots. It refuses to run if the target file has any content, so it can't touch real work. Open the FigConn plugin in the empty file first.
 
 - After changing `server/`, restart your MCP client.
 - After changing `plugin/src/`, run `npm run build` and re-run the plugin in Figma.
