@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0; padding: 12px; font: 12px/1.4 Inter, system-ui, sans-serif; background: var(--figma-color-bg, #fff); color: var(--figma-color-text, #222); }
+  h1 { font-size: 13px; margin: 0 0 8px; display: flex; align-items: center; gap: 8px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #bbb; }
+  .dot.on { background: #14ae5c; }
+  #ports { color: var(--figma-color-text-secondary, #777); }
+  #log { margin-top: 8px; color: var(--figma-color-text-secondary, #777); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+</style>
+</head>
+<body>
+  <h1><span id="dot" class="dot"></span><span id="status">Mencari server FigConn…</span></h1>
+  <div id="ports"></div>
+  <div id="log"></div>
+<script>
+  var PORT_START = 3911, PORT_END = 3920;
+  var sockets = {};   // port -> WebSocket (open or connecting)
+  var info = null;
+
+  function openPorts() {
+    return Object.keys(sockets).filter(function (p) { return sockets[p].readyState === 1; });
+  }
+  function render() {
+    var open = openPorts();
+    document.getElementById('dot').className = 'dot' + (open.length ? ' on' : '');
+    document.getElementById('status').textContent = open.length ? 'Connected' : 'Disconnected — menunggu server…';
+    document.getElementById('ports').textContent = open.length ? ('port: ' + open.join(', ')) : 'Pastikan Claude Code (MCP FigConn) sedang berjalan.';
+  }
+  function logLine(t) { document.getElementById('log').textContent = t; }
+  function send(ws, obj) { if (ws && ws.readyState === 1) ws.send(JSON.stringify(obj)); }
+  function broadcast(obj) { Object.keys(sockets).forEach(function (p) { send(sockets[p], obj); }); }
+
+  function connect(port) {
+    if (sockets[port]) return;
+    var ws;
+    try { ws = new WebSocket('ws://localhost:' + port); } catch (e) { return; }
+    sockets[port] = ws;
+    ws.onopen = function () { if (info) send(ws, { type: 'hello', info: info }); render(); };
+    ws.onclose = function () { if (sockets[port] === ws) delete sockets[port]; render(); };
+    ws.onerror = function () {};
+    ws.onmessage = function (ev) {
+      var msg; try { msg = JSON.parse(ev.data); } catch (e) { return; }
+      if (msg.type === 'request') {
+        logLine('▶ ' + msg.cmd);
+        msg.port = port;
+        parent.postMessage({ pluginMessage: msg }, '*');
+      }
+    };
+  }
+
+  function scan() { for (var p = PORT_START; p <= PORT_END; p++) connect(String(p)); }
+  scan();
+  setInterval(scan, 3000);
+
+  window.onmessage = function (ev) {
+    var msg = ev.data && ev.data.pluginMessage;
+    if (!msg) return;
+    if (msg.type === 'info') { info = msg.info; broadcast({ type: 'hello', info: info }); }
+    else if (msg.type === 'active') { info = msg.info || info; broadcast({ type: 'active', info: info }); }
+    else if (msg.type === 'response') {
+      var port = String(msg.port); delete msg.port;
+      send(sockets[port], msg);
+      logLine((msg.ok ? '✓ ' : '✗ ') + (msg.cmd || '') + (msg.ok ? '' : ' — ' + msg.error));
+    }
+  };
+  render();
+</script>
+</body>
+</html>

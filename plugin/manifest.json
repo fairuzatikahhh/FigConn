@@ -1,0 +1,32 @@
+{
+  "name": "FigConn",
+  "id": "figconn-local-dev",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": [
+    "figma"
+  ],
+  "documentAccess": "dynamic-page",
+  "permissions": [
+    "teamlibrary"
+  ],
+  "networkAccess": {
+    "allowedDomains": [
+      "none"
+    ],
+    "devAllowedDomains": [
+      "ws://localhost:3911",
+      "ws://localhost:3912",
+      "ws://localhost:3913",
+      "ws://localhost:3914",
+      "ws://localhost:3915",
+      "ws://localhost:3916",
+      "ws://localhost:3917",
+      "ws://localhost:3918",
+      "ws://localhost:3919",
+      "ws://localhost:3920"
+    ],
+    "reasoning": "Connects only to the local figconn MCP server on localhost."
+  }
+}
