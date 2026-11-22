@@ -13,6 +13,7 @@ function fileInfo() {
     id: SESSION_ID,
     fileKey: figma.fileKey || null,
     fileName: figma.root.name,
+    editorType: figma.editorType,
     currentPage: { id: figma.currentPage.id, name: figma.currentPage.name },
     selection: figma.currentPage.selection.map(function (n) { return n.id; }),
   };

@@ -143,11 +143,17 @@ const mcp = new McpServer(
   { name: "FigConn", version: "0.1.0" },
   {
     instructions:
-      "FigConn controls Figma through a local plugin (no API quota). Workflow: call `status` to see connected files; " +
-      "read with get_document / get_selection / get_node / get_screenshot; build design systems with get_variables, " +
-      "create_variable_collection, create_variables, bind_variable, get_styles, create_paint_style, create_text_style, " +
-      "apply_style, create_component, combine_as_variants, create_instance. For anything else use `execute`, which runs " +
-      "arbitrary Figma Plugin API code (async, `figma` in scope, document access is dynamic-page so use *Async APIs such as " +
+      "FigConn controls Figma Desktop through a local plugin (no REST API, no quota). Start with `status` to see connected files " +
+      "(each has editorType figma|figjam; pass `file` to target one). Read: get_document, get_selection, get_node, get_layout_tree, " +
+      "get_screenshot (PNG/JPG/SVG), save_screenshots. Create: create_frame, create_text, create_shape, create_svg, create_image, " +
+      "create_page, create_section. Edit: set_properties, set_auto_layout, set_layout_child, set_effects, set_gradient, set_stroke, " +
+      "set_constraints. Structure/arrange: duplicate_nodes, group_nodes, ungroup_node, reparent_nodes, reorder_nodes, place_relative, " +
+      "align_nodes, distribute_nodes, arrange_grid. Design systems: get_variables, create_variable_collection, create_variables, " +
+      "bind_variable, set_variable_mode, get_styles, create_paint_style, create_text_style, create_effect_style, apply_style, " +
+      "create_component, combine_as_variants, add_component_property, create_instance, set_instance_properties. Prototype: " +
+      "get_prototype_connections, trace_prototype_flow, set_reaction. FigJam-only: create_sticky, create_shape_with_text, " +
+      "create_connector, create_table (variables, styles and components are not available in FigJam). For anything else use `execute`, " +
+      "which runs arbitrary Figma Plugin API code (async, `figma` in scope; document access is dynamic-page so use *Async APIs such as " +
       "figma.getNodeByIdAsync and figma.variables.getLocalVariablesAsync). Colors are hex strings like #RRGGBB or #RRGGBBAA. " +
       "Always check the result with get_screenshot after visual changes.",
   }
