@@ -1,0 +1,18 @@
+{
+  "name": "figconn",
+  "version": "0.1.0",
+  "description": "Local MCP bridge between Claude Code and Figma Desktop with no REST API and no rate limits. Read, build and edit designs, variables, styles and components through a dev plugin over localhost WebSocket.",
+  "type": "module",
+  "bin": { "figconn": "server/index.js" },
+  "scripts": {
+    "start": "node server/index.js",
+    "build": "node scripts/build-plugin.js",
+    "check": "node scripts/build-plugin.js && node --check server/index.js && for f in server/tools/*.js; do node --check $f || exit 1; done && node --check plugin/code.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "ws": "^8.23.0",
+    "zod": "^3.25.0"
+  },
+  "engines": { "node": ">=18" }
+}

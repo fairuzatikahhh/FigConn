@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Local exports (save_screenshots output, test renders)
+exports/
+screenshots/
+*.png
+*.jpg
+*.jpeg
+*.pdf
+!docs/**/*.png
+!docs/**/*.jpg
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Editors / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc
+coverage/
+.cache/
+tmp/
