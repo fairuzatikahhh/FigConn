@@ -69,15 +69,35 @@ claude mcp add figconn -s user -- node "$(pwd)/server/index.js"
 
 For other MCP clients, see [Register in other MCP clients](#register-in-other-mcp-clients).
 
-### Then, in Figma
+### Install the Figma plugin
 
-**3. Import the plugin into Figma Desktop** (once)
+FigConn's Figma plugin isn't on the Figma Community. You add it once as a development plugin from this repo. This needs the **Figma Desktop app**: development plugins can't be imported in the browser.
 
-Figma Desktop → **Plugins → Development → Import plugin from manifest…** → pick `plugin/manifest.json`.
+**3. Find `plugin/manifest.json`**
 
-**4. Connect**
+- **Option A (Claude Code plugin):** the files live in Claude Code's plugin folder. Ask Claude to *"check FigConn status"* and the reply shows the full path. Or find it in a terminal:
 
-Open any Figma file → **Plugins → Development → FigConn**. Keep the small window open until it shows **● Connected**.
+  ```bash
+  find ~/.claude/plugins -path "*figconn*" -name manifest.json -path "*/plugin/*"
+  ```
+
+- **Option B (clone):** it's `plugin/manifest.json` inside the folder you cloned.
+
+**4. Import it into Figma Desktop** (once)
+
+1. Open any design file in Figma Desktop.
+2. Main menu (Figma logo, top left) → **Plugins → Development → Import plugin from manifest…**
+3. Pick the `manifest.json` from step 3.
+
+FigConn now appears under **Plugins → Development** in every file, both Figma Design and FigJam.
+
+**5. Connect**
+
+Open a file → **Plugins → Development → FigConn**. A small window opens. Keep it open while you work, until it shows **● Connected**. Closing the window disconnects that file. Run the plugin in each file you want Claude to reach.
+
+> **Tip:** after the first run you can start it faster with **Plugins → Run last plugin** (`⌥⌘P` on macOS, `Ctrl+Alt+P` on Windows), or search for "FigConn" in Quick Actions (`⌘/` or `Ctrl+/`).
+
+**Updating:** after updating FigConn (`/plugin marketplace update figconn`, or `git pull` for a clone), close and re-run the plugin in Figma to load the new version. You don't need to import it again, unless the folder moved. With the Claude Code plugin, the folder can move after an update. If Figma says it can't find the plugin, remove it in **Plugins → Development → Manage plugins in development** and import the new `manifest.json`.
 
 Then just ask:
 
