@@ -14,9 +14,6 @@
   ],
   "networkAccess": {
     "allowedDomains": [
-      "none"
-    ],
-    "devAllowedDomains": [
       "ws://localhost:3911",
       "ws://localhost:3912",
       "ws://localhost:3913",
@@ -28,6 +25,6 @@
       "ws://localhost:3919",
       "ws://localhost:3920"
     ],
-    "reasoning": "Connects only to the local figconn MCP server on localhost."
+    "reasoning": "FigConn is a bridge between Figma and an MCP server (e.g. Claude Code) running on the user's own machine. The plugin only opens WebSocket connections to that local server on localhost ports 3911-3920; it never contacts any remote host."
   }
 }
