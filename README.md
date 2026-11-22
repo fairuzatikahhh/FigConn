@@ -56,7 +56,7 @@ Or in one step on recent Claude Code versions:
 /plugin install figconn --marketplace fairuzatikahhh/FigConn
 ```
 
-The MCP server is registered for you and installs its own dependencies on first start (Node 18+ and npm required). Restart Claude Code, then ask Claude to *"check FigConn status"*: when no Figma file is connected yet, the reply includes the exact path of `plugin/manifest.json` to import in step 3 below.
+The MCP server is registered for you and installs its own dependencies on first start (Node 18+ and npm required). Restart Claude Code, then ask Claude to *"check FigConn status"*: when no Figma file is connected yet, the reply includes the exact path of `plugin/manifest.json` to import below.
 
 ### Option B: clone manually
 
@@ -73,7 +73,7 @@ For other MCP clients, see [Register in other MCP clients](#register-in-other-mc
 
 FigConn's Figma plugin isn't on the Figma Community. You add it once as a development plugin from this repo. This needs the **Figma Desktop app**: development plugins can't be imported in the browser.
 
-**3. Find `plugin/manifest.json`**
+**1. Find `plugin/manifest.json`**
 
 - **Option A (Claude Code plugin):** the files live in Claude Code's plugin folder. Ask Claude to *"check FigConn status"* and the reply shows the full path. Or find it in a terminal:
 
@@ -83,15 +83,15 @@ FigConn's Figma plugin isn't on the Figma Community. You add it once as a develo
 
 - **Option B (clone):** it's `plugin/manifest.json` inside the folder you cloned.
 
-**4. Import it into Figma Desktop** (once)
+**2. Import it into Figma Desktop** (once)
 
 1. Open any design file in Figma Desktop.
 2. Main menu (Figma logo, top left) → **Plugins → Development → Import plugin from manifest…**
-3. Pick the `manifest.json` from step 3.
+3. Pick the `manifest.json` from step 1.
 
 FigConn now appears under **Plugins → Development** in every file, both Figma Design and FigJam.
 
-**5. Connect**
+**3. Connect**
 
 Open a file → **Plugins → Development → FigConn**. A small window opens. Keep it open while you work, until it shows **● Connected**. Closing the window disconnects that file. Run the plugin in each file you want Claude to reach.
 
