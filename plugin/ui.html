@@ -41,6 +41,7 @@
   .kv .k { color: var(--fg3); }
 
   /* sessions */
+  #sessions { max-height: 168px; overflow-y: auto; margin: 0 -12px; padding: 0 12px; }
   .sess { padding: 5px 0; }
   .sess + .sess { border-top: 1px dashed var(--line); }
   .sess .name { font-weight: 600; }
@@ -56,7 +57,7 @@
   .ent.err .c { color: var(--err); }
   .ent.run .c { color: var(--run); }
   .ent .msg { grid-column: 2 / 4; padding-left: 18px; color: var(--err); white-space: normal; word-break: break-word; }
-  .empty { color: var(--fg3); padding: 2px 0; }
+  .empty { color: var(--fg3); padding: 2px 12px; }
   .ico { width: 12px; height: 12px; flex: none; display: inline-block; vertical-align: -2px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
   .ent .s { display: flex; align-items: center; gap: 6px; min-width: 0; }
   .ent.ok .s .ico { color: var(--ok); }
@@ -66,8 +67,9 @@
   .sess .row .ico { color: var(--fg2); align-self: center; }
   .kv .k { display: flex; align-items: center; gap: 5px; }
   .help { color: var(--fg2); }
-  .tog { all: unset; cursor: pointer; flex: none; align-self: center; width: 20px; height: 20px; margin: -2px -4px -2px 2px; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: var(--fg2); }
+  .tog { all: unset; cursor: pointer; flex: none; align-self: center; height: 22px; padding: 0 6px; margin: -3px -6px -3px 4px; border-radius: 5px; border: 1px solid var(--line); display: flex; align-items: center; gap: 4px; color: var(--fg2); font-size: 10.5px; font-weight: 500; }
   .tog:hover { background: var(--bg2); color: var(--fg); }
+  body.min .tog .txt { display: none; }
   .tog:focus-visible { outline: 1px solid var(--run); }
   body.min .hide-min { display: none; }
   body.min .sec:first-child { border-bottom: 0; padding: 8px 12px; }
@@ -181,6 +183,7 @@
     var tog = document.getElementById('tog');
     tog.innerHTML = '';
     tog.appendChild(icon(minimized ? 'expand' : 'minimize'));
+    if (!minimized) tog.appendChild(el('span', 'txt', 'Minimize'));
     tog.title = tog.ariaLabel = minimized ? 'Expand' : 'Minimize';
 
     var f = document.getElementById('file');
@@ -237,7 +240,7 @@
   function renderLog() {
     var box = document.getElementById('log');
     box.innerHTML = '';
-    if (!log.length) { box.appendChild(el('div', 'empty ent', 'Commands from Claude will appear here.')); return; }
+    if (!log.length) { box.appendChild(el('div', 'empty', 'Commands from Claude will appear here.')); return; }
     var multi = openPorts().length > 1;
     log.forEach(function (e) {
       var row = el('div', 'ent ' + e.state);
