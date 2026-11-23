@@ -66,21 +66,27 @@
   .sess .row .ico { color: var(--fg2); align-self: center; }
   .kv .k { display: flex; align-items: center; gap: 5px; }
   .help { color: var(--fg2); }
+  .tog { all: unset; cursor: pointer; flex: none; align-self: center; width: 20px; height: 20px; margin: -2px -4px -2px 2px; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: var(--fg2); }
+  .tog:hover { background: var(--bg2); color: var(--fg); }
+  .tog:focus-visible { outline: 1px solid var(--run); }
+  body.min .hide-min { display: none; }
+  body.min .sec:first-child { border-bottom: 0; padding: 8px 12px; }
+  body.min .status { font-size: 11px; }
   .help code { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 10.5px; background: var(--bg2); padding: 0 3px; border-radius: 3px; }
 </style>
 </head>
 <body>
   <div class="sec">
-    <div class="row"><span id="dot" class="dot"></span><span id="status" class="status grow ell">Looking for FigConn server</span><span id="counts" class="muted num"></span></div>
-    <div class="kv" id="file"></div>
+    <div class="row"><span id="dot" class="dot"></span><span id="status" class="status grow ell">Looking for FigConn server</span><span id="counts" class="muted num"></span><button id="tog" class="tog" type="button" title="Minimize" aria-label="Minimize"></button></div>
+    <div class="kv hide-min" id="file"></div>
   </div>
 
-  <div class="sec">
+  <div class="sec hide-min">
     <div class="label"><span>Sessions</span></div>
     <div id="sessions"></div>
   </div>
 
-  <div class="sec" id="logsec">
+  <div class="sec hide-min" id="logsec">
     <div class="label"><span>Activity</span><button id="clear" type="button">Clear</button></div>
     <div id="log" class="log"></div>
   </div>
@@ -94,6 +100,7 @@
   var log = [];         // newest first
   var info = null;      // current file info from the plugin
   var totals = { ok: 0, err: 0 };
+  var minimized = false;
 
   // ---------- icons (inline SVG, stroke = currentColor) ----------
   var ICONS = {
@@ -107,7 +114,9 @@
     file:     '<path d="M4 1.5h5l3.5 3.5v9.5h-8.5zM9 1.5V5h3.5"/>',
     page:     '<rect x="2.5" y="2.5" width="11" height="11" rx="1.5"/><path d="M2.5 6h11"/>',
     cursor:   '<path d="M3 2.5l9.5 4-4 1.5-1.5 4z"/>',
-    board:    '<rect x="1.5" y="2.5" width="13" height="11" rx="2"/><path d="M5 6h3M5 9h6"/>'
+    board:    '<rect x="1.5" y="2.5" width="13" height="11" rx="2"/><path d="M5 6h3M5 9h6"/>',
+    minimize: '<path d="M3.5 8h9"/>',
+    expand:   '<path d="M4 6.5l4 4 4-4"/>'
   };
   function icon(name) {
     var span = document.createElement('span');
@@ -160,11 +169,19 @@
     var open = openPorts();
     var busy = Object.keys(pending).length > 0;
     document.getElementById('dot').className = 'dot' + (busy ? ' busy' : open.length ? ' on' : '');
-    var status = !open.length ? 'Waiting for FigConn server'
-      : busy ? 'Working'
+    var running = log.filter(function (e) { return e.state === 'run'; });
+    var status = !open.length ? (minimized ? 'Waiting for server' : 'Waiting for FigConn server')
+      : busy ? (minimized && running.length ? running[0].cmd : 'Working')
+      : minimized ? 'Connected' + (open.length > 1 ? ' · ' + open.length : '')
       : 'Connected to ' + open.length + (open.length === 1 ? ' session' : ' sessions');
     document.getElementById('status').textContent = status;
-    document.getElementById('counts').textContent = (totals.ok + totals.err) ? (totals.ok + ' ok' + (totals.err ? ' · ' + totals.err + ' failed' : '')) : '';
+    document.getElementById('counts').textContent = (totals.ok + totals.err)
+      ? (minimized ? (totals.err ? totals.err + ' failed' : totals.ok + ' ok') : (totals.ok + ' ok' + (totals.err ? ' · ' + totals.err + ' failed' : '')))
+      : '';
+    var tog = document.getElementById('tog');
+    tog.innerHTML = '';
+    tog.appendChild(icon(minimized ? 'expand' : 'minimize'));
+    tog.title = tog.ariaLabel = minimized ? 'Expand' : 'Minimize';
 
     var f = document.getElementById('file');
     f.innerHTML = '';
@@ -239,10 +256,18 @@
 
   function render() { renderHeader(); renderSessions(); renderLog(); fit(); }
 
-  var lastH = 0;
+  var lastH = 0, lastW = 0;
   function fit() {
+    var w = minimized ? 200 : 300;
     var h = document.body.scrollHeight;
-    if (Math.abs(h - lastH) > 1) { lastH = h; parent.postMessage({ pluginMessage: { type: 'resize', width: 300, height: h } }, '*'); }
+    if (w !== lastW || Math.abs(h - lastH) > 1) { lastW = w; lastH = h; parent.postMessage({ pluginMessage: { type: 'resize', width: w, height: h } }, '*'); }
+  }
+
+  function setMinimized(v, persist) {
+    minimized = !!v;
+    document.body.classList.toggle('min', minimized);
+    render();
+    if (persist) parent.postMessage({ pluginMessage: { type: 'set-minimized', minimized: minimized } }, '*');
   }
 
   // ---------- sockets ----------
@@ -286,7 +311,8 @@
   window.onmessage = function (ev) {
     var msg = ev.data && ev.data.pluginMessage;
     if (!msg) return;
-    if (msg.type === 'info') { info = msg.info; broadcast({ type: 'hello', info: info }); render(); }
+    if (msg.type === 'prefs') { setMinimized(msg.minimized, false); }
+    else if (msg.type === 'info') { info = msg.info; broadcast({ type: 'hello', info: info }); render(); }
     else if (msg.type === 'active') { info = msg.info || info; broadcast({ type: 'active', info: info }); render(); }
     else if (msg.type === 'response') {
       var port = String(msg.port); delete msg.port;
@@ -312,6 +338,8 @@
     totals = { ok: 0, err: 0 };
     render();
   };
+
+  document.getElementById('tog').onclick = function () { setMinimized(!minimized, true); };
 
   scan();
   setInterval(scan, 3000);

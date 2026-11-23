@@ -17,6 +17,9 @@ function fileInfo() {
 }
 function postActive() { figma.ui.postMessage({ type: 'active', info: fileInfo() }); }
 figma.ui.postMessage({ type: 'info', info: fileInfo() });
+figma.clientStorage.getAsync('minimized').then(function (v) {
+  figma.ui.postMessage({ type: 'prefs', minimized: !!v });
+}).catch(function () {});
 figma.on('selectionchange', postActive);
 figma.on('currentpagechange', postActive);
 

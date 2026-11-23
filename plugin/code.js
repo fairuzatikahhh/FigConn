@@ -20,6 +20,9 @@ function fileInfo() {
 }
 function postActive() { figma.ui.postMessage({ type: 'active', info: fileInfo() }); }
 figma.ui.postMessage({ type: 'info', info: fileInfo() });
+figma.clientStorage.getAsync('minimized').then(function (v) {
+  figma.ui.postMessage({ type: 'prefs', minimized: !!v });
+}).catch(function () {});
 figma.on('selectionchange', postActive);
 figma.on('currentpagechange', postActive);
 
@@ -2350,7 +2353,11 @@ H.create_table = async function (p) {
 
 figma.ui.onmessage = async function (msg) {
   if (msg && msg.type === 'resize') {
-    figma.ui.resize(Math.max(240, Math.min(480, msg.width || 300)), Math.max(90, Math.min(640, Math.ceil(msg.height))));
+    figma.ui.resize(Math.max(160, Math.min(480, msg.width || 300)), Math.max(32, Math.min(640, Math.ceil(msg.height))));
+    return;
+  }
+  if (msg && msg.type === 'set-minimized') {
+    figma.clientStorage.setAsync('minimized', !!msg.minimized).catch(function () {});
     return;
   }
   if (!msg || msg.type !== 'request') return;
