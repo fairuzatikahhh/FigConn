@@ -15,6 +15,10 @@ import { z } from "zod";
 const PORT_START = Number(process.env.FIGCONN_PORT || 3911);
 const PORT_END = PORT_START + 9; // plugin scans 3911..3920
 const DEFAULT_TIMEOUT = 30_000;
+// Release the port (drop out of the plugin's session list) after this long without commands.
+// The MCP process stays up and re-listens on the next command. 0 disables.
+const IDLE_MS = Number(process.env.FIGCONN_IDLE_MINUTES ?? 30) * 60_000;
+const WAKE_WAIT_MS = 6_000; // plugin rescans ports every 3 s
 
 const log = (...a) => console.error("[figconn]", ...a); // stdout is reserved for MCP
 
@@ -26,6 +30,9 @@ const log = (...a) => console.error("[figconn]", ...a); // stdout is reserved fo
 const clients = new Map();
 const pending = new Map(); // requestId -> {resolve, reject, timer}
 let boundPort = null;
+let httpServers = [];
+let lastUse = Date.now();
+let waking = null;
 
 const sockets = new Set(); // every open plugin socket, hello'd or not
 const startedAt = Date.now();
@@ -114,7 +121,7 @@ async function listenOn(port) {
 async function startWs() {
   for (let port = PORT_START; port <= PORT_END; port++) {
     try {
-      await listenOn(port);
+      httpServers = await listenOn(port);
       boundPort = port;
       log(`listening on ws://localhost:${port}`);
       return;
@@ -123,6 +130,30 @@ async function startWs() {
     }
   }
   log(`no free port in ${PORT_START}-${PORT_END}; plugin connection unavailable`);
+}
+
+/** Close the plugin-facing port so this session drops out of the plugin window. */
+function sleepWs() {
+  if (boundPort == null) return;
+  log(`idle for ${IDLE_MS / 60_000} min; releasing port ${boundPort}`);
+  for (const ws of sockets) ws.close(1000, "idle");
+  for (const s of httpServers) s.close();
+  httpServers = [];
+  boundPort = null;
+}
+
+/** Re-listen after an idle sleep and give the plugin a moment to find us. */
+async function wakeWs() {
+  lastUse = Date.now();
+  if (boundPort != null) return;
+  if (!waking) {
+    waking = (async () => {
+      await startWs();
+      const until = Date.now() + WAKE_WAIT_MS;
+      while (clients.size === 0 && boundPort != null && Date.now() < until) await new Promise((r) => setTimeout(r, 200));
+    })().finally(() => { waking = null; });
+  }
+  await waking;
 }
 
 function pickClient(file) {
@@ -145,7 +176,8 @@ function pickClient(file) {
   return all.sort((a, b) => b.lastActive - a.lastActive)[0];
 }
 
-function call(cmd, params = {}, { file, timeout = DEFAULT_TIMEOUT } = {}) {
+async function call(cmd, params = {}, { file, timeout = DEFAULT_TIMEOUT } = {}) {
+  await wakeWs();
   const client = pickClient(file);
   const id = randomUUID();
   return new Promise((resolve, reject) => {
@@ -153,7 +185,7 @@ function call(cmd, params = {}, { file, timeout = DEFAULT_TIMEOUT } = {}) {
       pending.delete(id);
       reject(new Error(`Timed out after ${timeout} ms waiting for Figma (${cmd}). Is the plugin still open?`));
     }, timeout);
-    pending.set(id, { resolve, reject, timer });
+    pending.set(id, { resolve: (v) => { lastUse = Date.now(); resolve(v); }, reject: (e) => { lastUse = Date.now(); reject(e); }, timer });
     client.ws.send(JSON.stringify({ type: "request", id, cmd, params }));
   });
 }
@@ -205,15 +237,17 @@ function relay(name, description, shape, opts = {}) {
 mcp.registerTool(
   "status",
   { description: "Show the FigConn port and which Figma files currently have the plugin open.", inputSchema: {} },
-  async () =>
-    ok({
+  async () => {
+    await wakeWs();
+    return ok({
       port: boundPort,
       files: [...clients.values()].map((c) => ({ ...c.info, lastActive: new Date(c.lastActive).toISOString() })),
       hint: clients.size
         ? undefined
         : "Open a file in Figma Desktop → Plugins → Development → FigConn. First time? Import the plugin via " +
           "Plugins → Development → Import plugin from manifest… and pick " + join(dirname(fileURLToPath(import.meta.url)), "..", "plugin", "manifest.json"),
-    })
+    });
+  }
 );
 
 // --- generic -----------------------------------------------------------------
@@ -425,3 +459,20 @@ await startWs();
 mcp.server.oninitialized = () => { for (const ws of sockets) sendServerInfo(ws); };
 await mcp.connect(new StdioServerTransport());
 log("MCP ready");
+
+// --- auto close ------------------------------------------------------------------
+if (IDLE_MS > 0) {
+  setInterval(() => {
+    if (boundPort != null && pending.size === 0 && !waking && Date.now() - lastUse > IDLE_MS) sleepWs();
+  }, 30_000).unref();
+}
+// Exit when the MCP client goes away (stdin closed, or we were re-parented after it died),
+// so orphaned servers don't linger in the plugin's session list.
+const shutdown = (why) => { log(`shutting down: ${why}`); process.exit(0); };
+process.stdin.on("end", () => shutdown("stdin closed"));
+process.stdin.on("close", () => shutdown("stdin closed"));
+const parentPid = process.ppid;
+setInterval(() => {
+  if (process.ppid !== parentPid) return shutdown("parent process exited");
+  try { process.kill(parentPid, 0); } catch (e) { if (e.code === "ESRCH") shutdown("parent process exited"); }
+}, 10_000).unref();

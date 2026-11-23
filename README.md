@@ -293,6 +293,8 @@ claude mcp add figconn -s user -- npx -y github:fairuzatikahhh/FigConn
 
 - Every tool takes an optional `file` parameter (file name or id). Without it, FigConn uses the file whose plugin window was active most recently.
 - Up to 10 MCP servers (Claude sessions) can run at once, one per port in 3911–3920. The plugin connects to all of them.
+- Idle sessions close themselves: after 30 minutes without FigConn commands a server releases its port and drops out of the plugin window. Claude isn't affected, and the next command reconnects within a few seconds. Set `FIGCONN_IDLE_MINUTES` to change the timeout (`0` turns it off). A server also exits when the Claude app that started it closes.
+- In the plugin window, **Minimize** shrinks it to a one-line status bar and **Hide** hides it completely while FigConn keeps running. Run the plugin again to bring the window back.
 
 ## Security
 
