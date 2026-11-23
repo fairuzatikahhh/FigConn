@@ -8,6 +8,14 @@ figma.ui.onmessage = async function (msg) {
     figma.ui.resize(Math.max(160, Math.min(480, msg.width || 300)), Math.max(32, Math.min(640, Math.ceil(msg.height))));
     return;
   }
+  if (msg && msg.type === 'hide') {
+    figma.ui.hide();
+    figma.notify('FigConn is running in the background. Run the plugin again to show its window.', {
+      timeout: 6000,
+      button: { text: 'Show', action: function () { figma.ui.show(); } },
+    });
+    return;
+  }
   if (msg && msg.type === 'set-minimized') {
     figma.clientStorage.setAsync('minimized', !!msg.minimized).catch(function () {});
     return;

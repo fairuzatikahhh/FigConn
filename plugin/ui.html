@@ -70,6 +70,7 @@
   .tog { all: unset; cursor: pointer; flex: none; align-self: center; height: 22px; padding: 0 6px; margin: -3px -6px -3px 4px; border-radius: 5px; border: 1px solid var(--line); display: flex; align-items: center; gap: 4px; color: var(--fg2); font-size: 10.5px; font-weight: 500; }
   .tog:hover { background: var(--bg2); color: var(--fg); }
   body.min .tog .txt { display: none; }
+  .tog + .tog { margin-left: 8px; }
   .tog:focus-visible { outline: 1px solid var(--run); }
   body.min .hide-min { display: none; }
   body.min .sec:first-child { border-bottom: 0; padding: 8px 12px; }
@@ -79,7 +80,7 @@
 </head>
 <body>
   <div class="sec">
-    <div class="row"><span id="dot" class="dot"></span><span id="status" class="status grow ell">Looking for FigConn server</span><span id="counts" class="muted num"></span><button id="tog" class="tog" type="button" title="Minimize" aria-label="Minimize"></button></div>
+    <div class="row"><span id="dot" class="dot"></span><span id="status" class="status grow ell">Looking for FigConn server</span><span id="counts" class="muted num"></span><button id="tog" class="tog" type="button" title="Minimize" aria-label="Minimize"></button><button id="hide" class="tog" type="button" title="Hide window, keep running in background" aria-label="Hide window"></button></div>
     <div class="kv hide-min" id="file"></div>
   </div>
 
@@ -118,7 +119,8 @@
     cursor:   '<path d="M3 2.5l9.5 4-4 1.5-1.5 4z"/>',
     board:    '<rect x="1.5" y="2.5" width="13" height="11" rx="2"/><path d="M5 6h3M5 9h6"/>',
     minimize: '<path d="M3.5 8h9"/>',
-    expand:   '<path d="M4 6.5l4 4 4-4"/>'
+    expand:   '<path d="M4 6.5l4 4 4-4"/>',
+    hide:     '<path d="M2 8s2.2-4 6-4 6 4 6 4-2.2 4-6 4-6-4-6-4z"/><path d="M2.5 2.5l11 11"/>'
   };
   function icon(name) {
     var span = document.createElement('span');
@@ -184,6 +186,8 @@
     tog.innerHTML = '';
     tog.appendChild(icon(minimized ? 'expand' : 'minimize'));
     if (!minimized) tog.appendChild(el('span', 'txt', 'Minimize'));
+    var hb = document.getElementById('hide');
+    if (!hb.firstChild) { hb.appendChild(icon('hide')); hb.appendChild(el('span', 'txt', 'Hide')); }
     tog.title = tog.ariaLabel = minimized ? 'Expand' : 'Minimize';
 
     var f = document.getElementById('file');
@@ -342,6 +346,7 @@
     render();
   };
 
+  document.getElementById('hide').onclick = function () { parent.postMessage({ pluginMessage: { type: 'hide' } }, '*'); };
   document.getElementById('tog').onclick = function () { setMinimized(!minimized, true); };
 
   scan();
